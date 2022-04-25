@@ -1,0 +1,60 @@
+@media screen and (max-width: 990px) {
+  section .description,
+  section .mail,
+  .menu {
+    display: none;
+    visibility: hidden;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .issues {
+    overflow: auto;
+  }
+
+  .header-logo {
+    width: 160px;
+  }
+
+  .issue-item {
+    width: 80%;
+    max-width: 420px;
+  }
+
+  footer {
+    display: block;
+    text-align: center;
+  }
+
+  footer .description {
+    width: 100%;
+    padding-bottom: 50px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .issues-container {
+    overflow: scroll;
+  }
+}
+
+@media screen and (min-width: 991px) {
+  .issues {
+    height: 100vh;
+  }
+  .issues-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .issues-container {
+    scroll-snap-type: y mandatory;
+  }
+
+  .item-container {
+    scroll-snap-align: start;
+  }
+
+  footer {
+    display: none;
+  }
+}
