@@ -18,12 +18,19 @@ const Issues = () => {
     color: string;
   }>();
   const issueContainerRef = useRef<HTMLDivElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [height, setHeight] = useState<number>();
 
   useEffect(() => {
     document.body.style.backgroundColor = `${
       issueInView ? issueInView.color : undefined
     }`;
   }, [issueInView]);
+
+  useEffect(() => {
+    setHeight(window.innerHeight);
+  }, [window.innerHeight]);
 
   useEffect(() => {
     window.addEventListener("load", () => {
@@ -37,33 +44,36 @@ const Issues = () => {
     });
   }, []);
 
-  // Handle scroll on desktop
   useEffect(() => {
-    issueContainerRef.current?.addEventListener("scroll", () => {
-      megazinesWithRef.forEach((item) => {
-        if (item.ref.current) {
-          if (isScrolledIntoView(item.ref.current)) {
-            console.log("Triggered");
-            setIssuesInView({ id: item.id, color: item.color });
-          }
-        }
-      });
-    });
-  });
+    const megazineInView = megazinesWithRef[index];
+    if (megazineInView) {
+      setIssuesInView({ id: megazineInView.id, color: megazineInView.color });
+    }
+  }, [index]);
 
-  // Handle scroll on mobile
   useEffect(() => {
-    window.addEventListener("scroll", () => {
-      megazinesWithRef.forEach((item) => {
-        if (item.ref.current) {
-          if (isScrolledIntoView(item.ref.current)) {
-            console.log("Triggered");
-            setIssuesInView({ id: item.id, color: item.color });
-          }
+    // https://stackoverflow.com/questions/70843953/react-wait-until-transition-end-for-vertical-scroll
+    window.addEventListener("wheel", (event: WheelEvent) => {
+      if (!isAnimating) {
+        setIsAnimating(true);
+        if (event.deltaY < 0) {
+          // Up
+          index > 0 && setIndex(index - 1);
+        } else {
+          // Down
+          index < 4 && setIndex(index + 1);
         }
-      });
+      }
     });
-  });
+  }, [isAnimating]);
+
+  useEffect(() => {
+    if (issueContainerRef && issueContainerRef.current && height) {
+      issueContainerRef.current.style.transform = `translate3d(0,-${
+        index * height
+      }px,0)`;
+    }
+  }, [index, height]);
 
   return (
     <>
@@ -111,7 +121,11 @@ const Issues = () => {
             </li>
           ))}
         </ul>
-        <div ref={issueContainerRef} className="issues-container">
+        <div
+          ref={issueContainerRef}
+          onTransitionEnd={() => setIsAnimating(false)}
+          className="issues-container"
+        >
           {megazinesWithRef.map((megazine, index) => (
             <IssueItem key={index} data={megazine} />
           ))}
