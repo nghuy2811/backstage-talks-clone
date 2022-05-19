@@ -33,18 +33,6 @@ const Issues = () => {
   }, [window.innerHeight]);
 
   useEffect(() => {
-    window.addEventListener("load", () => {
-      megazinesWithRef.forEach((item) => {
-        if (item.ref.current) {
-          if (isScrolledIntoView(item.ref.current)) {
-            setIssuesInView({ id: item.id, color: item.color });
-          }
-        }
-      });
-    });
-  }, []);
-
-  useEffect(() => {
     const megazineInView = megazinesWithRef[index];
     if (megazineInView) {
       setIssuesInView({ id: megazineInView.id, color: megazineInView.color });
