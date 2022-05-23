@@ -1,12 +1,13 @@
-import React, { createRef, useState, useEffect, useRef } from "react";
+import { createRef, useState, useEffect, useRef, useCallback } from "react";
 
-import isScrolledIntoView from "../../utils/isScrolledIntoView";
+import useScreen from "../../custom-hook/useScreen";
 import IssueItem from "../issue-item";
 import megazines from "../../data";
 import "../../assets/styles/issue.css";
 import "../../assets/styles/issue-responsive.css";
 
 const Issues = () => {
+  const { isMobile, isDesktop } = useScreen();
   const megazinesWithRef = megazines.map((megazine) => {
     return {
       ...megazine,
@@ -21,6 +22,13 @@ const Issues = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [index, setIndex] = useState(0);
   const [height, setHeight] = useState<number>();
+
+  const handleSetIndexMobile = useCallback(
+    (index: number) => {
+      setIndex(index);
+    },
+    [index]
+  );
 
   useEffect(() => {
     document.body.style.backgroundColor = `${
@@ -41,7 +49,7 @@ const Issues = () => {
 
   useEffect(() => {
     // https://stackoverflow.com/questions/70843953/react-wait-until-transition-end-for-vertical-scroll
-    window.addEventListener("wheel", (event: WheelEvent) => {
+    const handleMouseWheel = (event: WheelEvent) => {
       if (!isAnimating) {
         setIsAnimating(true);
         if (event.deltaY < 0) {
@@ -51,17 +59,25 @@ const Issues = () => {
           // Down
           index < 4 && setIndex(index + 1);
         }
-      }
-    });
-  }, [isAnimating]);
+      } else console.log(index);
+    };
+
+    if (isDesktop) {
+      window.addEventListener("wheel", (e) => handleMouseWheel(e));
+    }
+    return () =>
+      window.removeEventListener("wheel", (e) => handleMouseWheel(e));
+  }, [isAnimating, isDesktop]);
 
   useEffect(() => {
     if (issueContainerRef && issueContainerRef.current && height) {
-      issueContainerRef.current.style.transform = `translate3d(0,-${
-        index * height
-      }px,0)`;
+      if (isDesktop) {
+        issueContainerRef.current.style.transform = `translate3d(0,-${
+          index * height
+        }px,0)`;
+      } else issueContainerRef.current.style.transform = `translate3d(0,0,0)`;
     }
-  }, [index, height]);
+  }, [index, height, isDesktop]);
 
   return (
     <>
@@ -115,7 +131,13 @@ const Issues = () => {
           className="issues-container"
         >
           {megazinesWithRef.map((megazine, index) => (
-            <IssueItem key={index} data={megazine} />
+            <IssueItem
+              key={index}
+              data={megazine}
+              index={index}
+              isMobile={isMobile}
+              onIssueInView={handleSetIndexMobile}
+            />
           ))}
         </div>
       </section>

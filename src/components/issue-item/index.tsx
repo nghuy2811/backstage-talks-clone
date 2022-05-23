@@ -1,14 +1,42 @@
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { megazine } from "../../data";
+import isScrolledIntoView from "../../utils/isScrolledIntoView";
 
 const IssueItem: FC<{
   data: megazine;
-}> = ({ data }) => {
+  index: number;
+  onIssueInView: (index: number) => void;
+  isMobile: boolean;
+}> = ({ data, index, onIssueInView, isMobile }) => {
   const [height, setHeight] = useState<number>();
+
   useEffect(() => {
     setHeight(window.innerHeight);
   }, [window.innerHeight]);
+
+  useEffect(() => {
+    const handleSetIssueInvView = () => {
+      if (data.ref && data.ref.current) {
+        const elem = data.ref.current;
+        if (isScrolledIntoView(elem)) onIssueInView(index);
+      }
+    };
+
+    if (isMobile) {
+      handleSetIssueInvView();
+
+      window.addEventListener("scroll", () => {
+        handleSetIssueInvView();
+      });
+    }
+
+    return () => {
+      window.removeEventListener("scroll", () => {
+        handleSetIssueInvView();
+      });
+    };
+  }, [index, data, isMobile]);
 
   return (
     <div
